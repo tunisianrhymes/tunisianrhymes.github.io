@@ -5,10 +5,15 @@ import './SearchInput.css';
 function SearchInput({ onSearch }) {
     const [query, setQuery] = useState('');
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
+    const handleSearch = () => {
         if (query.trim()) {
             onSearch(query);
+        }
+    };
+
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            handleSearch();
         }
     };
 
@@ -20,7 +25,7 @@ function SearchInput({ onSearch }) {
 
     return (
         <div className="search-container">
-            <form onSubmit={handleSubmit} className="search-form">
+            <div className="search-form">
                 <div className="input-wrapper">
                     <input
                         type="text"
@@ -28,18 +33,19 @@ function SearchInput({ onSearch }) {
                         placeholder="Type a word..."
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
+                        onKeyDown={handleKeyDown}
                         autoFocus
                     />
                     <div className="input-actions">
                         <button type="button" className="action-btn random-btn" onClick={handleRandom} title="Random Word">
                             🎲
                         </button>
-                        <button type="submit" className="action-btn search-btn">
+                        <button type="button" className="action-btn search-btn" onClick={handleSearch}>
                             Search
                         </button>
                     </div>
                 </div>
-            </form>
+            </div>
         </div>
     );
 }

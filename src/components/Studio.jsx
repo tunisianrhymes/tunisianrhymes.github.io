@@ -5,17 +5,16 @@ import RhymeResults from './RhymeResults';
 import { findRhymes } from '../utils/rhymeEngine';
 import { supabase } from '../supabaseClient';
 import { fetchUserLyrics, saveUserLyric, deleteUserLyric } from '../utils/dbUtils';
-import { IoCloudUploadOutline, IoListOutline, IoAdd, IoTrashOutline, IoSaveOutline } from 'react-icons/io5';
+import { IoListOutline, IoAdd, IoTrashOutline, IoSaveOutline } from 'react-icons/io5';
 import './Studio.css';
 
 function Studio() {
     const [lyrics, setLyrics] = useState('');
-    const [title, setTitle] = useState('Untitled Track'); // New: Track Title
-    const [currentId, setCurrentId] = useState(null); // ID of currently open lyric
+    const [title, setTitle] = useState('Untitled Track');
+    const [currentId, setCurrentId] = useState(null);
     const [searchedWord, setSearchedWord] = useState('');
     const [results, setResults] = useState({ best: [], good: [], near: [] });
 
-    // Cloud State
     const [user, setUser] = useState(null);
     const [savedLyrics, setSavedLyrics] = useState([]);
     const [showSidebar, setShowSidebar] = useState(false);
@@ -40,7 +39,7 @@ function Studio() {
         setResults(rhymes);
     };
 
-    const handleWordClick = (e) => {
+    const handleWordClick = () => {
         const selection = window.getSelection().toString();
         if (selection && selection.trim().length > 0) {
             handleSearch(selection.trim());
@@ -54,9 +53,9 @@ function Studio() {
             const saved = await saveUserLyric(currentId, title, lyrics);
             setCurrentId(saved.id);
             await loadSavedLyrics();
-            alert("Saved successfully! ☁️");
+            alert("Saved! ☁️");
         } catch (err) {
-            alert("Error saving: " + err.message);
+            alert("Error: " + err.message);
         } finally {
             setIsSaving(false);
         }
@@ -86,78 +85,69 @@ function Studio() {
 
     return (
         <div className="studio-container">
-            <div className="studio-header">
-                <div className="header-left">
-                    <h2>🎛️ Studio</h2>
-                    {user && (
-                        <div className="studio-controls">
-                            <button className="ctrl-btn" onClick={() => setShowSidebar(!showSidebar)}>
-                                <IoListOutline /> My Songs
-                            </button>
-                            <button className="ctrl-btn" onClick={handleNew}>
-                                <IoAdd /> New
-                            </button>
-                            <button className="ctrl-btn primary" onClick={handleSave} disabled={isSaving}>
-                                {isSaving ? 'Saving...' : <><IoSaveOutline /> Save</>}
-                            </button>
-                        </div>
-                    )}
-                </div>
-                <BeatPlayer />
+            {/* Beat Player - Top */}
+            <BeatPlayer />
+
+            {/* Header with Title + Actions */}
+            <div className="studio-header-simple">
+                <input
+                    type="text"
+                    className="title-input"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Track Title..."
+                />
+                {user && (
+                    <div className="studio-actions">
+                        <button className="studio-action-btn" onClick={() => setShowSidebar(!showSidebar)}>
+                            <IoListOutline />
+                        </button>
+                        <button className="studio-action-btn" onClick={handleNew}>
+                            <IoAdd />
+                        </button>
+                        <button className="studio-action-btn primary" onClick={handleSave} disabled={isSaving}>
+                            <IoSaveOutline />
+                        </button>
+                    </div>
+                )}
             </div>
 
-            <div className="studio-workspace">
-                {/* Lyrics List Sidebar (Overlay or Shift) */}
-                {showSidebar && user && (
-                    <div className="lyrics-sidebar">
-                        <h3>My Collection</h3>
+            {/* Saved Songs Modal */}
+            {showSidebar && user && (
+                <div className="modal-overlay" onClick={() => setShowSidebar(false)}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <h3>My Songs</h3>
                         <ul className="saved-list">
                             {savedLyrics.map(l => (
-                                <li
-                                    key={l.id}
-                                    className={currentId === l.id ? 'active' : ''}
-                                    onClick={() => handleLoadlyric(l)}
-                                >
-                                    <div className="song-info">
-                                        <span className="song-title">{l.title || 'Untitled'}</span>
-                                        <span className="song-date">{new Date(l.updated_at).toLocaleDateString()}</span>
-                                    </div>
+                                <li key={l.id} className={currentId === l.id ? 'active' : ''} onClick={() => handleLoadlyric(l)}>
+                                    <span className="song-title">{l.title || 'Untitled'}</span>
                                     <button className="del-btn" onClick={(e) => handleDelete(e, l.id)}>
                                         <IoTrashOutline />
                                     </button>
                                 </li>
                             ))}
-                            {savedLyrics.length === 0 && <p className="empty-msg">No saved songs yet.</p>}
+                            {savedLyrics.length === 0 && <p className="empty-msg">No saved songs.</p>}
                         </ul>
                     </div>
-                )}
-
-                <div className="editor-panel">
-                    <div className="panel-controls">
-                        <input
-                            type="text"
-                            className="title-input"
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                            placeholder="Track Title..."
-                        />
-                        <span className="panel-hint">Double-click words to rhyme</span>
-                    </div>
-                    <textarea
-                        className="lyrics-input"
-                        placeholder="Write your bars here..."
-                        value={lyrics}
-                        onChange={(e) => setLyrics(e.target.value)}
-                        onDoubleClick={handleWordClick}
-                    />
                 </div>
+            )}
 
-                <div className="rhyme-panel">
-                    <div className="panel-label">🔍 Rhyme Finder</div>
-                    <SearchInput onSearch={handleSearch} />
-                    <div className="results-scroll-area">
-                        <RhymeResults results={results} searchedWord={searchedWord} minimalist={true} />
-                    </div>
+            {/* Editor */}
+            <div className="editor-simple">
+                <textarea
+                    className="lyrics-input"
+                    placeholder="Write your bars here... (Double-tap a word to find rhymes)"
+                    value={lyrics}
+                    onChange={(e) => setLyrics(e.target.value)}
+                    onDoubleClick={handleWordClick}
+                />
+            </div>
+
+            {/* Rhyme Finder */}
+            <div className="rhyme-finder-simple">
+                <SearchInput onSearch={handleSearch} />
+                <div className="results-area">
+                    <RhymeResults results={results} searchedWord={searchedWord} minimalist={true} />
                 </div>
             </div>
         </div>
@@ -165,3 +155,4 @@ function Studio() {
 }
 
 export default Studio;
+

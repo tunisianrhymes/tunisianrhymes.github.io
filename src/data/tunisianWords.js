@@ -6620,7 +6620,6 @@ export const tunisianWords = [
   "lflous",
   "lfoo9",
   "lforsa",
-  "lfou9",
   "Lfouska",
   "lgadya",
   "lgalb",

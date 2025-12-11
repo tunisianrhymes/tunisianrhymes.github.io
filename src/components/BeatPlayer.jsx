@@ -191,7 +191,22 @@ function BeatPlayer() {
                 <span className="player-title">{currentTrack}</span>
             </div>
 
-            {/* Time & Progress */}
+            {/* Main Controls - Always Visible */}
+            <div className="main-controls">
+                <button className="control-btn" onClick={handlePrevious} disabled={!isReady}>
+                    <IoPlaySkipBack />
+                </button>
+
+                <button className="control-btn play-btn-main" onClick={handlePlayPause} disabled={!isReady}>
+                    {isPlaying ? <IoPause /> : <IoPlay />}
+                </button>
+
+                <button className="control-btn" onClick={handleNext} disabled={!isReady}>
+                    <IoPlaySkipForward />
+                </button>
+            </div>
+
+            {/* Time & Progress - Hidden on Mobile */}
             <div className="progress-container">
                 <span className="time-text">{formatTime(currentTime)}</span>
                 <input
@@ -205,8 +220,8 @@ function BeatPlayer() {
                 <span className="time-text">{formatTime(duration)}</span>
             </div>
 
+            {/* Secondary Controls - Hidden on Mobile */}
             <div className="controls-row">
-                {/* Secondary Controls */}
                 <div className="secondary-controls">
                     <button
                         className={`control-btn small ${isShuffle ? 'active' : ''}`}
@@ -235,22 +250,6 @@ function BeatPlayer() {
                     </button>
                 </div>
 
-                {/* Main Controls */}
-                <div className="main-controls">
-                    <button className="control-btn" onClick={handlePrevious} disabled={!isReady}>
-                        <IoPlaySkipBack />
-                    </button>
-
-                    <button className="control-btn play-btn-main" onClick={handlePlayPause} disabled={!isReady}>
-                        {isPlaying ? <IoPause /> : <IoPlay />}
-                    </button>
-
-                    <button className="control-btn" onClick={handleNext} disabled={!isReady}>
-                        <IoPlaySkipForward />
-                    </button>
-                </div>
-
-                {/* Repeat Control */}
                 <div className="secondary-controls">
                     <button
                         className={`control-btn small ${isRepeat ? 'active' : ''}`}

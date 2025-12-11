@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { importWordsFromText, getDictionaryStats, removeDuplicates } from '../utils/dictionaryManager';
-import { IoCloudUpload, IoLockClosed, IoKey, IoCheckmarkDone, IoTrash, IoStatsChart } from 'react-icons/io5';
+import { removeDbDuplicates, fetchDbWords } from '../utils/dbUtils';
+import LyricsManager from './LyricsManager';
+import { IoCloudUpload, IoLockClosed, IoKey, IoCheckmarkDone, IoTrash, IoStatsChart, IoMusicalNotes, IoBuild } from 'react-icons/io5';
 import './DictionaryManager.css';
 
 function DictionaryManager({ currentWords, onUpdateWords }) {
@@ -12,8 +14,12 @@ function DictionaryManager({ currentWords, onUpdateWords }) {
     const [inputText, setInputText] = useState('');
     const [previewWords, setPreviewWords] = useState([]);
     const [importedCount, setImportedCount] = useState(0);
-    const [activeTab, setActiveTab] = useState('import'); // 'import' | 'stats'
+    const [activeTab, setActiveTab] = useState('import'); // 'import' | 'stats' | 'lyrics'
     const [isUploading, setIsUploading] = useState(false);
+
+    // Cleanup state
+    const [isCleaning, setIsCleaning] = useState(false);
+    const [cleanupResult, setCleanupResult] = useState('');
 
     const stats = getDictionaryStats(currentWords);
 
@@ -87,6 +93,35 @@ function DictionaryManager({ currentWords, onUpdateWords }) {
         }
     };
 
+    // 🧹 Cleanup Duplicates
+    const handleCleanup = async () => {
+        if (!window.confirm("Are you sure you want to scan and remove duplicate words from the database? This cannot be undone.")) return;
+
+        setIsCleaning(true);
+        setCleanupResult('Scanning database...');
+        try {
+            // 1. Run the cleanup
+            const count = await removeDbDuplicates();
+
+            // 2. Sync Local State (Important!)
+            setCleanupResult(`Verified ${count} duplicates removed. Syncing...`);
+
+            const cloudData = await fetchDbWords();
+            if (cloudData) {
+                // Just map to strings for the app's word list
+                const wordList = cloudData.map(item => item.word);
+                const uniqueList = [...new Set(wordList)]; // Safety net
+                onUpdateWords(uniqueList); // Updates parent App state
+            }
+
+            setCleanupResult(`✅ Success! Removed ${count} duplicates & synced.`);
+        } catch (err) {
+            setCleanupResult('❌ Error: ' + err.message);
+        } finally {
+            setIsCleaning(false);
+        }
+    };
+
     // 🔒 Lock Screen layout
     if (!isAdmin) {
         return (
@@ -124,6 +159,12 @@ function DictionaryManager({ currentWords, onUpdateWords }) {
                         onClick={() => setActiveTab('import')}
                     >
                         Add Words
+                    </button>
+                    <button
+                        className={`dm-tab ${activeTab === 'lyrics' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('lyrics')}
+                    >
+                        <IoMusicalNotes /> Lyrics Tool
                     </button>
                     <button
                         className={`dm-tab ${activeTab === 'stats' ? 'active' : ''}`}
@@ -177,6 +218,12 @@ function DictionaryManager({ currentWords, onUpdateWords }) {
                 </div>
             )}
 
+            {activeTab === 'lyrics' && (
+                <div className="dm-content lyrics-mode">
+                    <LyricsManager />
+                </div>
+            )}
+
             {activeTab === 'stats' && (
                 <div className="dm-content stats-mode">
                     <div className="stat-card">
@@ -184,7 +231,29 @@ function DictionaryManager({ currentWords, onUpdateWords }) {
                         <h3>Total Words in App</h3>
                         <p className="stat-value">{stats.totalWords}</p>
                     </div>
-                    <div className="stat-list">
+
+                    <div className="maintenance-card" style={{ marginTop: '1.5rem', background: 'rgba(255,255,255,0.03)', padding: '1rem', borderRadius: '0.8rem' }}>
+                        <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', color: '#bbb' }}><IoBuild /> Maintenance</h4>
+                        <button
+                            className="dm-btn secondary"
+                            onClick={handleCleanup}
+                            disabled={isCleaning}
+                            style={{ width: '100%', justifyContent: 'center' }}
+                        >
+                            {isCleaning ? 'Cleaning...' : <><IoTrash /> Remove Database Duplicates</>}
+                        </button>
+                        {cleanupResult && <p style={{
+                            color: cleanupResult.startsWith('❌') ? '#ef4444' : '#4ade80',
+                            marginTop: '0.8rem',
+                            fontSize: '0.9rem',
+                            textAlign: 'center',
+                            background: 'rgba(0,0,0,0.2)',
+                            padding: '0.5rem',
+                            borderRadius: '0.4rem'
+                        }}>{cleanupResult}</p>}
+                    </div>
+
+                    <div className="stat-list" style={{ marginTop: '1.5rem' }}>
                         <h4>Top Rhymes</h4>
                         <ul>
                             {stats.topEndings.map(([ending, count]) => (
@@ -199,6 +268,7 @@ function DictionaryManager({ currentWords, onUpdateWords }) {
             )}
         </div>
     );
+
 }
 
 export default DictionaryManager;

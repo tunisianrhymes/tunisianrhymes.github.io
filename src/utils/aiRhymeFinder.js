@@ -3,7 +3,7 @@
 
 // Configuration - Update these with your running model endpoint
 const API_CONFIG = {
-    apiKey: 'YOUR_API_KEY',
+    apiKey: 'cpk_037672acae7e4000aeca1a85f947ebf2.c574ae6905385b45bc9cd549f69fd90e.DROd2wGBWWTFmHXX89Lwyk1nxrNBBSPH',
     baseURL: 'https://api.chutes.ai/v1', // or https://api.openai.com/v1
     model: 'tngtech/TNG-R1T-Chimera-TEE' // or gpt-4o-mini
 };
@@ -13,7 +13,7 @@ const API_CONFIG = {
  * Note: Requires a valid endpoint. Use Dictionary Manager for manual imports if API is unavailable.
  */
 export async function generateRhymesWithAI(word) {
-    if (API_CONFIG.apiKey === 'YOUR_API_KEY') {
+    if (API_CONFIG.apiKey === 'cpk_037672acae7e4000aeca1a85f947ebf2.c574ae6905385b45bc9cd549f69fd90e.DROd2wGBWWTFmHXX89Lwyk1nxrNBBSPH') {
         console.warn('⚠️ AI API not configured. Please update src/utils/aiRhymeFinder.js');
         return [];
     }
@@ -72,7 +72,7 @@ Rules:
  * Expand dictionary by generating rhymes for existing words
  */
 export async function expandDictionaryWithAI(existingWords, sampleSize = 50) {
-    if (API_CONFIG.apiKey === 'YOUR_API_KEY') return [];
+    if (API_CONFIG.apiKey === 'your_api_key') return [];
 
     const newWords = new Set();
     const sample = existingWords.sort(() => Math.random() - 0.5).slice(0, sampleSize);

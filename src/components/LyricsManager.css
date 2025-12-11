@@ -1,0 +1,177 @@
+.lyrics-manager {
+    padding: 1rem;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.lm-section h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    color: #a855f7;
+}
+
+/* Rappers List */
+.rapper-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.rapper-chip {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    color: #bbb;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+}
+
+.rapper-chip:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+}
+
+.rapper-chip.active {
+    background: #a855f7;
+    border-color: #a855f7;
+    color: #fff;
+    font-weight: bold;
+    box-shadow: 0 0 10px rgba(168, 85, 247, 0.4);
+}
+
+/* Search Tool */
+.search-tool {
+    display: flex;
+    gap: 0.5rem;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 1rem;
+    border-radius: 12px;
+}
+
+.search-tool input {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0.8rem;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 1rem;
+}
+
+.lm-search-btn {
+    background: #f59e0b;
+    /* Genius Yellow-ish */
+    color: #000;
+    border: none;
+    padding: 0 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: transform 0.2s;
+}
+
+.lm-search-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    background: #fbbf24;
+}
+
+.lm-search-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Converter Tool */
+.converter-tool {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 1.5rem;
+    border-radius: 12px;
+}
+
+.lyrics-cols {
+    display: flex;
+    gap: 1rem;
+    height: 300px;
+}
+
+.lyrics-cols .col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.lyrics-cols h4 {
+    margin-bottom: 0.5rem;
+    color: #aaa;
+    font-size: 0.9rem;
+}
+
+.lyrics-cols textarea {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 1rem;
+    color: #fff;
+    resize: none;
+    font-family: monospace;
+    line-height: 1.5;
+}
+
+.converter-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.convert-btn,
+.download-btn {
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.convert-btn {
+    background: #3b82f6;
+    color: #fff;
+}
+
+.convert-btn:hover:not(:disabled) {
+    background: #2563eb;
+}
+
+.download-btn {
+    background: #10b981;
+    color: #fff;
+}
+
+.download-btn:hover:not(:disabled) {
+    background: #059669;
+}
+
+.convert-btn:disabled,
+.download-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #444;
+}

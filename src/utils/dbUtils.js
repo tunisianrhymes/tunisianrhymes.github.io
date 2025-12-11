@@ -99,6 +99,33 @@ export const getWordStats = async (wordStr) => {
 };
 
 /**
+ * Get likes for multiple words at once (batch).
+ * Returns a map of { word: likeCount }
+ */
+export const getWordsLikes = async (wordStrings) => {
+    try {
+        if (!wordStrings || wordStrings.length === 0) return {};
+
+        const { data, error } = await supabase
+            .from('words')
+            .select('word, likes')
+            .in('word', wordStrings);
+
+        if (error) throw error;
+
+        const likesMap = {};
+        data.forEach(item => {
+            likesMap[item.word] = item.likes || 0;
+        });
+
+        return likesMap;
+    } catch (err) {
+        console.error('Error fetching batch likes:', err);
+        return {};
+    }
+};
+
+/**
  * Fetch logs for the current user
  */
 export const fetchUserLyrics = async () => {
@@ -172,5 +199,71 @@ export const deleteUserLyric = async (id) => {
     } catch (err) {
         console.error('Error deleting lyric:', err);
         return false;
+    }
+};
+
+/**
+ * Remove duplicate words from the database.
+ * Keeps the version with the most likes.
+ */
+export const removeDbDuplicates = async () => {
+    try {
+        console.log("Starting deduplication...");
+        // Fetch up to 10,000 words (supabase default limit is usually 1000, need range)
+        const { data: allWords, error } = await supabase
+            .from('words')
+            .select('id, word, likes')
+            .range(0, 9999);
+
+        if (error) throw error;
+
+        console.log(`Fetched ${allWords.length} words.`);
+
+        const uniqueMap = new Map();
+        const idsToDelete = [];
+
+        // Identify duplicates
+        allWords.forEach(record => {
+            const normalized = record.word.trim().toLowerCase();
+
+            if (uniqueMap.has(normalized)) {
+                // Conflict! Decide which one to keep
+                const existing = uniqueMap.get(normalized);
+
+                // Keep the one with MORE likes
+                if ((record.likes || 0) > (existing.likes || 0)) {
+                    // New one is better, delete the old one
+                    idsToDelete.push(existing.id);
+                    uniqueMap.set(normalized, record);
+                } else {
+                    // Existing is better or equal, delete the new one
+                    idsToDelete.push(record.id);
+                }
+            } else {
+                uniqueMap.set(normalized, record);
+            }
+        });
+
+        console.log(`Found ${idsToDelete.length} duplicates to remove.`);
+
+        if (idsToDelete.length === 0) return 0;
+
+        // Delete duplicates in batches of 50 to avoid URL length issues
+        const batchSize = 50;
+        for (let i = 0; i < idsToDelete.length; i += batchSize) {
+            const batch = idsToDelete.slice(i, i + batchSize);
+            const { error: deleteError } = await supabase
+                .from('words')
+                .delete()
+                .in('id', batch);
+
+            if (deleteError) throw deleteError;
+        }
+
+        return idsToDelete.length;
+
+    } catch (err) {
+        console.error('Deduplication failed:', err);
+        throw err;
     }
 };

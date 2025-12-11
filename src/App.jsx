@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
-import { IoHeartSharp, IoLibrary } from 'react-icons/io5'
+import { IoHeartSharp, IoLibrary, IoHome, IoCreate, IoLogoInstagram, IoSchool } from 'react-icons/io5'
 import SearchInput from './components/SearchInput'
 import RhymeResults from './components/RhymeResults'
 import Studio from './components/Studio'
+import RhymeTrainer from './components/RhymeTrainer'
 import DictionaryManager from './components/DictionaryManager'
 import Auth from './components/Auth'
 import LoginPrompt from './components/LoginPrompt'
@@ -62,13 +63,6 @@ function App() {
     };
 
     setResults(sortedRhymes);
-
-    // Auto-Add Logic: If no Perfect or Good results, log it
-    // If it's searched 4 times, the backend will auto-approve it.
-    const hasGoodMatches = rhymes.best?.length > 0 || rhymes.good?.length > 0;
-    if (!hasGoodMatches && word.length > 2) {
-      logMissingWord(word);
-    }
   };
 
   // Dynamic trending words
@@ -93,46 +87,53 @@ function App() {
   return (
     <div className="app-container">
       <LoginPrompt />
-      {/* Mode Switcher */}
+
+      {/* Header Actions (Auth + Support) */}
+      {mode !== 'studio' && (
+        <div className="header-actions">
+          <Auth />
+          <a
+            href="https://gateway.konnect.network/pay?payment_ref=67325e6348461274169ea39c&selectedPaymentMethod=bank_card"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="donate-btn-icon"
+            aria-label="Support Us"
+          >
+            <IoHeartSharp />
+          </a>
+        </div>
+      )}
+
+      {/* Mode Switcher (Bottom Nav on Mobile) */}
       <nav className="mode-switcher">
         <button
           className={`mode-btn ${mode === 'home' ? 'active' : ''}`}
           onClick={() => setMode('home')}
         >
-          🏠 Home
+          <span className="nav-icon"><IoHome /></span>
+          <span className="nav-label">Home</span>
         </button>
         <button
           className={`mode-btn ${mode === 'studio' ? 'active' : ''}`}
           onClick={() => setMode('studio')}
         >
-          🎛️ Studio
+          <span className="nav-icon"><IoCreate /></span>
+          <span className="nav-label">Studio</span>
         </button>
         <button
           className={`mode-btn ${mode === 'dictionary' ? 'active' : ''}`}
           onClick={() => setMode('dictionary')}
         >
-          <IoLibrary /> Manager
+          <span className="nav-icon"><IoLibrary /></span>
+          <span className="nav-label">Manager</span>
         </button>
-
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: '10px', alignItems: 'center' }}>
-          <Auth />
-          {/* Donation Button */}
-          <a
-            href="https://gateway.konnect.network/pay?payment_ref=67325e6348461274169ea39c&selectedPaymentMethod=bank_card"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="donate-btn"
-          >
-            <IoHeartSharp /> Support Us
-          </a>
-        </div>
       </nav>
 
       {/* HOME MODE */}
       {mode === 'home' && (
         <>
           <header className="main-header">
-            <h1 className="logo">🇹🇳 TunisianRhymes</h1>
+            <h1 className="logo">TunisianRhymes</h1>
             <p className="subtitle">Find rhymes in Derja instantly</p>
 
             <div className="trending-section">
@@ -153,11 +154,43 @@ function App() {
 
           <main className="main-content">
             <SearchInput onSearch={handleSearch} />
+
+            {/* Feature Cards - show when no search */}
+            {!searchedWord && (
+              <div className="feature-cards">
+                <div className="feature-card">
+                  <span className="feature-icon">🎯</span>
+                  <h4>Smart Rhymes</h4>
+                  <p>Find perfect, good, and near rhymes for any Tunisian word</p>
+                </div>
+                <div className="feature-card">
+                  <span className="feature-icon">📊</span>
+                  <h4>Syllable Groups</h4>
+                  <p>Results organized by syllable count for better flow</p>
+                </div>
+                <div className="feature-card">
+                  <span className="feature-icon">❤️</span>
+                  <h4>Community Picks</h4>
+                  <p>Like your favorites - popular words get promoted</p>
+                </div>
+                <div className="feature-card">
+                  <span className="feature-icon">🎵</span>
+                  <h4>Studio Mode</h4>
+                  <p>Write lyrics with beats and instant rhyme lookup</p>
+                </div>
+              </div>
+            )}
+
             <RhymeResults results={results} searchedWord={searchedWord} />
           </main>
 
           <footer className="main-footer">
             <p>Made with ❤️ for Tunisia • {words.length} Words Loaded</p>
+            <div className="footer-links">
+              <a href="https://instagram.com/chiheb_elouni" target="_blank" rel="noopener noreferrer" className="instagram-link">
+                <IoLogoInstagram /> @chiheb_elouni
+              </a>
+            </div>
           </footer>
         </>
       )}
@@ -178,6 +211,15 @@ function App() {
           />
         </main>
       )}
+
+      {/* NEW: TRAINER MODE */}
+      {mode === 'trainer' && (
+        <main className="trainer-wrapper" style={{ height: '80vh' }}>
+          <RhymeTrainer words={words} />
+          <button onClick={() => setMode('home')} style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'transparent', color: '#fff', border: 'none', fontSize: '1.5rem', cursor: 'pointer' }}>✕</button>
+        </main>
+      )}
+
     </div>
   )
 }
